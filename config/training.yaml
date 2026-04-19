@@ -1,0 +1,43 @@
+model:
+  name: "microsoft/Phi-3-mini-4k-instruct"   # Phi-3-mini (~3.8B params)
+  local_path: "models/base"                   # cache weights here after first download
+  max_length: 384                             # reduced from 512 to save VRAM on 6GB GPU
+
+lora:
+  r: 16
+  lora_alpha: 32
+  # target_modules auto-detected in train_lora.py based on model name:
+  #   Phi-2:      ["q_proj", "v_proj", "k_proj", "dense"]
+  #   Phi-3-mini: ["qkv_proj", "o_proj", "gate_up_proj", "down_proj"]
+  target_modules: ["qkv_proj", "o_proj", "gate_up_proj", "down_proj"]
+  lora_dropout: 0.05
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: "float16"
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true
+
+training:
+  output_dir: "models/lora"
+  num_train_epochs: 3
+  per_device_train_batch_size: 1              # reduced from 2 → 1 for 6GB VRAM
+  gradient_accumulation_steps: 8              # increased from 4 → 8 to compensate
+  learning_rate: 2.0e-4
+  warmup_ratio: 0.05
+  lr_scheduler_type: "cosine"
+  save_steps: 100
+  logging_steps: 20
+  eval_steps: 100
+  fp16: true
+  optim: "paged_adamw_8bit"
+  dataloader_num_workers: 0                   # keep 0 on Windows
+
+data:
+  raw_path: "data/raw/synthetic_logs.jsonl"
+  train_path: "data/processed/train.jsonl"
+  val_path: "data/processed/val.jsonl"
+  val_split: 0.1
+  num_days: 90                                # days of synthetic logs to generate

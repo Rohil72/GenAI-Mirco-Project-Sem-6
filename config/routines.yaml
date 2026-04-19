@@ -1,0 +1,60 @@
+routines:
+  - name: morning_routine
+    days: weekday
+    steps:
+      - device: bathroom_light
+        action: on
+        time: "06:30"
+        duration_minutes: 20
+      - device: coffee_maker
+        action: on
+        time: "06:35"
+        duration_minutes: 15
+      - device: kitchen_light
+        action: on
+        time: "06:50"
+        duration_minutes: 30
+      - device: living_room_light
+        action: on
+        time: "07:00"
+        duration_minutes: 60
+
+  - name: evening_routine
+    days: all
+    steps:
+      - device: living_room_light
+        action: on
+        time: "18:30"
+        duration_minutes: 180
+      - device: tv
+        action: on
+        time: "19:00"
+        duration_minutes: 120
+      - device: bedroom_light
+        action: on
+        time: "22:00"
+        duration_minutes: 45
+
+  - name: weekend_morning
+    days: weekend
+    steps:
+      - device: kitchen_light
+        action: on
+        time: "09:00"
+        duration_minutes: 60
+      - device: coffee_maker
+        action: on
+        time: "09:05"
+        duration_minutes: 20
+      - device: living_room_light
+        action: on
+        time: "09:30"
+        duration_minutes: 120
+
+  - name: laundry_routine
+    days: [saturday]
+    steps:
+      - device: washing_machine
+        action: on
+        time: "10:00"
+        duration_minutes: 90

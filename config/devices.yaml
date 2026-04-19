@@ -1,0 +1,40 @@
+devices:
+  - id: living_room_light
+    name: "Living Room Light"
+    room: living_room
+    type: light
+
+  - id: bedroom_light
+    name: "Bedroom Light"
+    room: bedroom
+    type: light
+
+  - id: kitchen_light
+    name: "Kitchen Light"
+    room: kitchen
+    type: light
+
+  - id: bathroom_light
+    name: "Bathroom Light"
+    room: bathroom
+    type: light
+
+  - id: tv
+    name: "Television"
+    room: living_room
+    type: appliance
+
+  - id: coffee_maker
+    name: "Coffee Maker"
+    room: kitchen
+    type: appliance
+
+  - id: thermostat
+    name: "Thermostat"
+    room: hallway
+    type: climate
+
+  - id: washing_machine
+    name: "Washing Machine"
+    room: utility
+    type: appliance
