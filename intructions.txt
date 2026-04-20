@@ -1,0 +1,38 @@
+Steps to start training (concise):
+
+1. Prep environment
+- Use Linux or WSL2 (bitsandbytes / QLoRA is flaky on native Windows).
+- Ensure CUDA (11.8/12.x) + nvidia drivers + a GPU (8–12 GB VRAM recommended).
+
+2. Install deps
+- python -m venv .venv && .venv\Scripts\activate (Windows) or source .venv/bin/activate (WSL/Linux)
+- pip install -r requirements.txt
+
+3. Prepare data & configs
+- Generate synthetic logs if missing:
+  - python main.py generate --days 90 --output data/raw/synthetic_logs.jsonl
+- Format into train/val:
+  - python main.py format
+- Confirm config/training.yaml has desired model, paths, batch size, epochs.
+
+4. Download/cache base model (optional, speeds first run)
+- (Hugging Face token if required):
+  - pip install huggingface_hub
+  - python -c "from huggingface_hub import hf_hub_download; hf_hub_download('microsoft/Phi-3-mini-4k-instruct', filename='config.json')"
+  - or let transformers auto-download on first run (cache -> models/base).
+
+5. Run training
+- From repo root:
+  - python main.py train
+  - OR (same): python -m training.train_lora --config config/training.yaml
+- Training artifacts are saved to the configured output_dir (default models/lora/final).
+
+6. Monitor & troubleshoot
+- Watch console logs; check models/lora for checkpoints.
+- If OOM: reduce per_device_train_batch_size, increase gradient_accumulation_steps, lower max_length, or use a smaller model.
+- If bitsandbytes errors on Windows: move to WSL2/Linux.
+
+7. After training
+- Final LoRA adapter + tokenizer saved under models/lora/final — use python main.py predict --input <file> to test.
+
+If you want, run quick checks now: verify data files exist and config values (I can do those checks). Which step should be done next?
