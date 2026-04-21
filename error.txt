@@ -1,0 +1,100 @@
+(.venv) PS C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6> python main.py train
+
+============================================================
+=== Stage: train ===
+============================================================
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 71, in _get_module
+    return importlib.import_module("." + module_name, self.__name__)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1206, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1178, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1149, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\trainer\sft_trainer.py", line 46, in <module>
+    from ..chat_template_utils import clone_chat_template, get_training_chat_template
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\chat_template_utils.py", line 309, in <module>
+    deepseekv3_chat_template = (_CHAT_TEMPLATES_DIR / "deepseekv3.jinja").read_text()
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\pathlib.py", line 1059, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 932: character maps to <undefined>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\main.py", line 192, in <module>
+    main()
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\main.py", line 188, in main
+    args.func(args)
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\main.py", line 55, in cmd_train
+    from training.train_lora import main as train_main
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\training\train_lora.py", line 22, in <module>
+    from trl import SFTTrainer
+  File "<frozen importlib._bootstrap>", line 1231, in _handle_fromlist
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 62, in __getattr__
+    value = getattr(module, name)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 61, in __getattr__
+    module = self._get_module(self._class_to_module[name])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 73, in _get_module
+    raise RuntimeError(
+RuntimeError: Failed to import trl.trainer.sft_trainer because of the following error (look up to see its traceback):
+'charmap' codec can't decode byte 0x81 in position 932: character maps to <undefined>
+(.venv) PS C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6> python -m training.train_lora --config config/training.yaml
+Traceback (most recent call last):
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 71, in _get_module
+    return importlib.import_module("." + module_name, self.__name__)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1206, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1178, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1149, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\trainer\sft_trainer.py", line 46, in <module>
+    from ..chat_template_utils import clone_chat_template, get_training_chat_template
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\chat_template_utils.py", line 309, in <module>
+    deepseekv3_chat_template = (_CHAT_TEMPLATES_DIR / "deepseekv3.jinja").read_text()
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\pathlib.py", line 1059, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 932: character maps to <undefined>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\training\train_lora.py", line 22, in <module>
+    from trl import SFTTrainer
+  File "<frozen importlib._bootstrap>", line 1231, in _handle_fromlist
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 62, in __getattr__
+    value = getattr(module, name)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 61, in __getattr__
+    module = self._get_module(self._class_to_module[name])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6\.venv\Lib\site-packages\trl\_lazy_module.py", line 73, in _get_module
+    raise RuntimeError(
+RuntimeError: Failed to import trl.trainer.sft_trainer because of the following error (look up to see its traceback):
+'charmap' codec can't decode byte 0x81 in position 932: character maps to <undefined>
+(.venv) PS C:\Users\Admin\New folder\GenAI-Mirco-Project-Sem-6> 
