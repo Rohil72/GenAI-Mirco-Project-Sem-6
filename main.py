@@ -15,21 +15,18 @@ import sys
 import os
 import argparse
 
-# Ensure project root is on sys.path
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if _BASE_DIR not in sys.path:
     sys.path.insert(0, _BASE_DIR)
 
 
 def _print_stage(name: str):
-    """Print a clear header before each stage."""
     print(f"\n{'=' * 60}")
     print(f"=== Stage: {name} ===")
     print(f"{'=' * 60}\n")
 
 
 def cmd_generate(args):
-    """Run data generator."""
     _print_stage("generate")
     from data.generator.generate_data import main as gen_main
     gen_args = []
@@ -43,28 +40,24 @@ def cmd_generate(args):
 
 
 def cmd_format(args):
-    """Run data formatter."""
     _print_stage("format")
     from training.format_data import main as fmt_main
     fmt_main([])
 
 
 def cmd_train(args):
-    """Run QLoRA training."""
     _print_stage("train")
-    from training.train_lora import main as train_main
-    train_main([])
+    from training.train_lora import train
+    train()
 
 
 def cmd_evaluate(args):
-    """Run evaluation."""
     _print_stage("evaluate")
-    from training.evaluate import main as eval_main
-    eval_main([])
+    from training.evaluate import evaluate
+    evaluate()
 
 
 def cmd_predict(args):
-    """Run inference."""
     _print_stage("predict")
     from inference.predict import main as pred_main
     pred_args = []
@@ -80,7 +73,6 @@ def cmd_predict(args):
 
 
 def cmd_simulate(args):
-    """Run Pygame simulation."""
     _print_stage("simulate")
     from simulation.visualize import main as sim_main
     sim_args = []
@@ -92,21 +84,20 @@ def cmd_simulate(args):
 
 
 def cmd_all(args):
-    """Run full pipeline: generate -> format -> train -> evaluate."""
     stages = [
         ("generate", cmd_generate),
         ("format", cmd_format),
         ("train", cmd_train),
         ("evaluate", cmd_evaluate),
     ]
-    
+
     for name, func in stages:
         try:
             func(args)
         except Exception as e:
             print(f"\n!!! Pipeline FAILED at stage '{name}': {e}")
             sys.exit(1)
-    
+
     print(f"\n{'=' * 60}")
     print("=== All stages completed successfully! ===")
     print(f"{'=' * 60}")
@@ -127,64 +118,48 @@ Examples:
   python main.py all                                # full pipeline
         """,
     )
-    
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
-    # generate
-    p_gen = subparsers.add_parser("generate", help="Generate synthetic smart-home logs")
 
-    p_gen.add_argument("--days", type=int, default=None,
-                       help="Number of days (default: from training.yaml)")
-    p_gen.add_argument("--output", type=str, default=None,
-                       help="Output .jsonl path")
-    p_gen.add_argument("--seed", type=int, default=None,
-                       help="Random seed (default: 42)")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    p_gen = subparsers.add_parser("generate", help="Generate synthetic smart-home logs")
+    p_gen.add_argument("--days", type=int, default=None)
+    p_gen.add_argument("--output", type=str, default=None)
+    p_gen.add_argument("--seed", type=int, default=None)
     p_gen.set_defaults(func=cmd_generate)
-    
-    # format
+
     p_fmt = subparsers.add_parser("format", help="Format raw logs into training data")
     p_fmt.set_defaults(func=cmd_format)
-    
-    # train
+
     p_train = subparsers.add_parser("train", help="Fine-tune model with QLoRA")
     p_train.set_defaults(func=cmd_train)
-    
-    # evaluate
+
     p_eval = subparsers.add_parser("evaluate", help="Evaluate fine-tuned model")
     p_eval.set_defaults(func=cmd_evaluate)
-    
-    # predict
+
     p_pred = subparsers.add_parser("predict", help="Run inference on logs")
-    p_pred.add_argument("--input", type=str, default=None,
-                        help="Path to .jsonl log file")
-    p_pred.add_argument("--text", type=str, default=None,
-                        help="Raw text input")
+    p_pred.add_argument("--input", type=str, default=None)
+    p_pred.add_argument("--text", type=str, default=None)
     p_pred.add_argument("--max-new-tokens", type=int, default=None)
     p_pred.add_argument("--temperature", type=float, default=None)
     p_pred.set_defaults(func=cmd_predict)
-    
-    # simulate
+
     p_sim = subparsers.add_parser("simulate", help="Run Pygame simulation")
-    p_sim.add_argument("--log", type=str, required=True,
-                       help="Path to .jsonl event log")
-    p_sim.add_argument("--speed", type=float, default=None,
-                       help="Speed multiplier (default: 300)")
+    p_sim.add_argument("--log", type=str, required=True)
+    p_sim.add_argument("--speed", type=float, default=None)
     p_sim.set_defaults(func=cmd_simulate)
-    
-    # all
-    p_all = subparsers.add_parser("all",
-                                   help="Run full pipeline: generate -> format -> train -> evaluate")
+
+    p_all = subparsers.add_parser("all", help="Run full pipeline: generate -> format -> train -> evaluate")
     p_all.add_argument("--days", type=int, default=None)
     p_all.add_argument("--output", type=str, default=None)
     p_all.add_argument("--seed", type=int, default=None)
     p_all.set_defaults(func=cmd_all)
-    
+
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         sys.exit(1)
-    
+
     args.func(args)
 
 
