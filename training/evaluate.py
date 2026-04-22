@@ -15,7 +15,7 @@ import re
 
 import yaml
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 from tqdm import tqdm
 
@@ -23,12 +23,12 @@ _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _BASE_DIR not in sys.path:
     sys.path.insert(0, _BASE_DIR)
 
-from utils.logging_utils import get_logger
-logger = get_logger("evaluate")
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("evaluate")
 
 
 def _extract_prompt(text):
-    """Extract only ### Instruction + ### Input from a full sample."""
     idx = text.find("### Response:")
     if idx == -1:
         return text
@@ -36,7 +36,6 @@ def _extract_prompt(text):
 
 
 def _extract_response(text):
-    """Extract only ### Response section from a full sample."""
     idx = text.find("### Response:")
     if idx == -1:
         return ""
@@ -44,18 +43,15 @@ def _extract_response(text):
 
 
 def _extract_routine_names(text):
-    """Extract routine names from text like 'Routine detected: morning_routine'."""
     return set(re.findall(r"Routine detected:\s*(\w+)", text))
 
 
 def _compute_rouge_l(reference, hypothesis):
-    """Compute ROUGE-L F1 score between two strings (token-level LCS)."""
     ref_tokens = reference.lower().split()
     hyp_tokens = hypothesis.lower().split()
     if not ref_tokens or not hyp_tokens:
         return 0.0
 
-    # LCS via dynamic programming
     m, n = len(ref_tokens), len(hyp_tokens)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
     for i in range(1, m + 1):
@@ -85,7 +81,9 @@ def evaluate(config_path=None):
     val_path = os.path.join(_BASE_DIR, config["data"]["val_path"])
     trust_remote = "phi" in model_name.lower()
 
-    # Load model with quantization
+    # =========================
+    # Quantization
+    # =========================
     qcfg = config["quantization"]
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=qcfg["load_in_4bit"],
@@ -94,10 +92,29 @@ def evaluate(config_path=None):
         bnb_4bit_use_double_quant=qcfg["bnb_4bit_use_double_quant"],
     )
 
+    # =========================
+    # Model Config Fix (Phi-3 rope_scaling)
+    # =========================
+    config_obj = AutoConfig.from_pretrained(
+        model_name,
+        trust_remote_code=trust_remote,
+        cache_dir=local_path,
+    )
+    if hasattr(config_obj, "rope_scaling"):
+        config_obj.rope_scaling = None
+
+    # =========================
+    # Load base model + LoRA
+    # =========================
     logger.info(f"Loading base model: {model_name}")
     base_model = AutoModelForCausalLM.from_pretrained(
-        model_name, quantization_config=bnb_config,
-        device_map="auto", cache_dir=local_path, trust_remote_code=trust_remote,
+        model_name,
+        config=config_obj,
+        quantization_config=bnb_config,
+        device_map="auto",
+        cache_dir=local_path,
+        trust_remote_code=trust_remote,
+        attn_implementation="eager",
     )
 
     logger.info(f"Loading LoRA adapter from {lora_path}")
@@ -109,7 +126,9 @@ def evaluate(config_path=None):
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    # =========================
     # Load val samples
+    # =========================
     samples = []
     with open(val_path, "r", encoding="utf-8") as f:
         for line in f:
@@ -129,22 +148,29 @@ def evaluate(config_path=None):
         gt_response = _extract_response(text)
         gt_routines = _extract_routine_names(gt_response)
 
-        # Generate
-        inputs = tokenizer(prompt + "\n\n### Response:\n",
-                          return_tensors="pt", truncation=True,
-                          max_length=config["model"]["max_length"])
+        inputs = tokenizer(
+            prompt + "\n\n### Response:\n",
+            return_tensors="pt",
+            truncation=True,
+            max_length=config["model"]["max_length"],
+        )
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
 
+        model.config.use_cache = False
         with torch.no_grad():
             outputs = model.generate(
-                **inputs, max_new_tokens=256,
-                temperature=0.2, do_sample=True,
+                **inputs,
+                max_new_tokens=256,
+                use_cache=False,
+                temperature=0.2,
+                do_sample=True,
                 pad_token_id=tokenizer.eos_token_id,
             )
-        generated = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:],
-                                     skip_special_tokens=True)
+        generated = tokenizer.decode(
+            outputs[0][inputs["input_ids"].shape[1]:],
+            skip_special_tokens=True,
+        )
 
-        # Metrics
         rouge_l = _compute_rouge_l(gt_response, generated)
         rouge_scores.append(rouge_l)
 
@@ -171,15 +197,14 @@ def evaluate(config_path=None):
     logger.info(f"Routine Name Match Rate:  {avg_match:.4f}")
     logger.info("=" * 50)
 
-    # Save results
     output = {
         "avg_rouge_l": round(avg_rouge, 4),
         "avg_routine_match": round(avg_match, 4),
         "num_samples": len(samples),
         "per_sample": results,
     }
-    results_path = os.path.join(_BASE_DIR, config["training"]["output_dir"],
-                                "eval_results.json")
+    results_path = os.path.join(
+        _BASE_DIR, config["training"]["output_dir"], "eval_results.json")
     os.makedirs(os.path.dirname(results_path), exist_ok=True)
     with open(results_path, "w") as f:
         json.dump(output, f, indent=2)
